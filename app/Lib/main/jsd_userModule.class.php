@@ -21,7 +21,7 @@ class jsd_userModule extends JsdModule
             app_redirect(url("index", "jsd_index#index"));
         }
         
-        $GLOBALS['tmpl']->assign("jsd_user_name",  $this->user['user_name']);
+        $GLOBALS['jsd_user_data'] = $this->user;
     }
     
     //用户账户余额
@@ -325,16 +325,16 @@ class jsd_userModule extends JsdModule
         $region_lv2 = $GLOBALS['db']->getAll("select * from ".DB_PREFIX."region_conf where region_level = 2");  //二级地址
         foreach($region_lv2 as $k=>$v)
         {
-            if($v['id'] == intval($GLOBALS['user_info']['province_id']))
+            if($v['id'] == intval($this->user['province_id']))
             {
                 $region_lv2[$k]['selected'] = 1;
                 break;
             }
         }
-        $region_lv3 = $GLOBALS['db']->getAll("select * from ".DB_PREFIX."region_conf where pid = ".intval($GLOBALS['user_info']['province_id']));  //三级地址
+        $region_lv3 = $GLOBALS['db']->getAll("select * from ".DB_PREFIX."region_conf where pid = ".intval($this->user['province_id']));  //三级地址
         foreach($region_lv3 as $k=>$v)
         {
-            if($v['id'] == intval($GLOBALS['user_info']['city_id']))
+            if($v['id'] == intval($this->user['city_id']))
             {
                 $region_lv3[$k]['selected'] = 1;
                 break;
@@ -343,7 +343,7 @@ class jsd_userModule extends JsdModule
         
         $GLOBALS['tmpl']->assign("region_lv2",$region_lv2);
         $GLOBALS['tmpl']->assign("region_lv3",$region_lv3);
-            
+        $GLOBALS['tmpl']->assign("page_title","设置");
         $GLOBALS['tmpl']->assign("jsd_user_data", $this->user);
         $GLOBALS['tmpl']->display("jsd/user_setting.html");
     }

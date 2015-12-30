@@ -2,43 +2,66 @@
 <script type="text/javascript" src="{$APP_ROOT}/system/region.js"></script>
 <section class="set_up">
     <form>
-        <p class="tietin">个人资料</p>
-        <ul class="zilao">
+        <p class="tietin" id='p_info'>个人资料</p>
+        <ul class="zilao" style="display: none;">
             <li>
                 <span>手机</span>
                 <i>{$jsd_user_data.mobile}</i>
             </li>
             <li>
                 <span>邮箱</span>
-                <input type="email" value="{$jsd_user_data.email}">
+                <input type="email" name="email" value="{$jsd_user_data.email}">
             </li>
             <li>
                 <span>地址</span>
                 <select id="settings_province_id" name="province_id" class="ui-select" height="200">
-                        <option value="0">所在省份</option>
-                        {foreach from=$region_lv2 item=lv2}
-                        <option {if $lv2.selected eq 1}selected="selected"{/if} value="{$lv2.id}">{$lv2.name}</option>
-                        {/foreach}
+                    <option value="0">所在省份</option>
+                    {foreach from=$region_lv2 item=lv2}
+                    <option {if $lv2.selected eq 1}selected="selected"{/if} value="{$lv2.id}">{$lv2.name}</option>
+                    {/foreach}
                 </select>
                 <select id="settings_city_id" name="city_id" class="ui-select" height="200">
-                        <option value="0">所在城市</option>		
-                        {foreach from=$region_lv3 item=lv3}
-                        <option {if $lv3.selected eq 1}selected="selected"{/if} value="{$lv3.id}">{$lv3.name}</option>
-                        {/foreach}
+                    <option value="0">所在城市</option>		
+                    {foreach from=$region_lv3 item=lv3}
+                    <option {if $lv3.selected eq 1}selected="selected"{/if} value="{$lv3.id}">{$lv3.name}</option>
+                    {/foreach}
                 </select>
-                <input type="text" value="">
+                <input type="text" value="<?php echo $GLOBALS['jsd_user_data']['address_detail'];?>">
             </li>
             <li>
                 <span>生日</span>
-                <input type="text" value="{$jsd_user_data.byear}-{$jsd_user_data.bmonth}-{$jsd_user_data.bday}">
+                <select id="settings_byear" name="byear" class="ui-select" height="200">
+                    <option value="0">年</option>
+                    <?php for($i = date("Y") ;$i>=date("Y")-100; $i--){ ?>
+                    <option value="<?php echo $i; ?>" <?php if($i==$GLOBALS['jsd_user_data']['byear']){echo 'selected="selected"';} ?>><?php echo $i; ?></option>
+                    <?php
+                    }
+                    ?>
+                </select>
+                <select id="settings_bmonth" name="bmonth" class="ui-select" height="200">
+                    <option value="0">月</option>
+                    <?php for($i = 1 ;$i<=12; $i++){ ?>
+                    <option value="<?php echo $i; ?>"  <?php if($i==$GLOBALS['jsd_user_data']['bmonth']){echo 'selected="selected"';} ?>><?php echo $i; ?></option>
+                    <?php
+                    }
+                    ?>
+                </select>
+                <select id="settings_bday" name="bday" class="ui-select" height="200">
+                    <option value="0">日</option>
+                    <?php for($i = 1 ;$i<=31; $i++){ ?>
+                    <option value="<?php echo $i; ?>" <?php if($i==$GLOBALS['jsd_user_data']['bday']){echo 'selected="selected"';} ?>><?php echo $i; ?></option>
+                    <?php
+                    }
+                    ?>
+                </select>
             </li>
             <li>
                 <span>称呼</span>
                 <input type="text" value="{$jsd_user_data.user_name}">
             </li>
-        </ul>
-        <ul class="paoswodr">
-            <p class="tietin">修改密码</p>
+        </ul>            
+        <p class="tietin" id='pwd_change'>修改密码</p>
+        <ul class="paoswodr" style="display: none;border-top: 1px">
             <li>
                 <span>旧密码</span>
                 <input type="password">
@@ -53,20 +76,125 @@
             </li>
         </ul>
         <ul class="botton">
-            <input type="submit" value="确认修改">
+            <input type="submit" value="确认修改" onclick="update_form()">
         </ul>
+        
+        <input type="hidden" id='update_type' value="0">
     </form>
 </section>
 </section>
 
 <script>
-    //切换地区
-    $(document).ready(function(){	
+    $(document).ready(function(){
+        //个人资料
+        $("#p_info").click(function(){
+            $(".zilao").slideToggle('normal',function(){
+                check_update_type();
+            });
+        });
+        
+        //密码
+        $("#pwd_change").click(function(){
+            $(".paoswodr").slideToggle('normal',function(){
+                check_update_type();
+            });
+        });
+        
+        //切换地区
         $("select[name='province_id']").bind("change",function(){
             load_city();
         });
-    })
+        
+        //天数计算
+	$("#settings_bmonth,#settings_byear").bind("change",function(){
+            var m = parseInt($("#settings_bmonth").val());
+            var y = parseInt($("#settings_byear").val());
+            if(m>0&&y>0){
+                var d = parseInt($("#settings_bday").val());			
+                day = load_month_day(y,m);
+                var html = "<option value='0'>日</option>";
+                for(i=1;i<=day;i++){
+                    html += "<option value='"+i+"'>"+i+"</option>";
+                }
+                $("#settings_bday").html(html);
+                $("#settings_bday").val(d);
+                $("#settings_bday").ui_select({refresh:true});
+            }
+	});
+    });
+    
+    function update_form(){
+        var update_type = $("#update_type").val();
+        switch(update_type){
+            case 1:
+                //验证字段
+                var email = $(form).find("input[name='email']");
+                if($.trim(email.val())==""){
+                    form_tip(email,"请输入邮箱账号");
+                    return false;
+                }
+                if(!$.checkEmail(email.val()))
+                {
+                        form_err(email,"邮箱格式不正确");
+                        return false;
+                };
+              break;
+            case 2:
+              ;
+              break;
+            default:
+              ;
+              break;
+        }
+        
+        if(mobile_check() && pwd_check()){
+            var mobile = $('#mobile').val();
+            var user_pwd = $('#user_pwd').val();
+            
+            $.ajax({
+                type : 'post',
+                url : '{$ajax_login_url}',
+                data : {'mobile' : mobile,'user_pwd' : user_pwd},
+                dataType : 'json',
+                success : function(data) 
+                {
+                    if(!data.status){
+                        //错误消息
+                        $(".queren").show();
+                        $(".complete").show();
+                        message_box_show(data.info);
+                        return false;
+                    }else{
+                        //发送成功
+                        $(".queren").show();
+                        $(".complete").show();
+                        
+                        message_box_show(data.info);
+                        $('#message_box').siblings(".guan_2").click(function(){
+                            window.location.href="{$mypage_url}";
+                        });
+                    }
+                }
+            });
+        }
+    }
 
+    /**
+     * 检查更新状态
+     * user_type:0 均不修改 1 只修改资料 2 只修改密码 3两者均修改
+     */
+    function check_update_type(){
+        if ($('.zilao').is(':visible') && !$(".paoswodr").is(':visible')) {
+            $("#update_type").val(1);
+        }else if(!$('.zilao').is(':visible') && $(".paoswodr").is(':visible')){
+            $("#update_type").val(2);
+        }else if($('.zilao').is(':visible') && $(".paoswodr").is(':visible')){
+            $("#update_type").val(3);
+        }else{
+            $("#update_type").val(0);
+        }
+    }
+        
     //载入城市
     function load_city()
     {
@@ -78,13 +206,26 @@
             var regionConfs=eval(evalStr);
             evalStr+=".";
             var html = "<option value='0'>所在城市</option>";
-            for(var key in regionConfs)
-            {
+            for(var key in regionConfs){
                 html+="<option value='"+eval(evalStr+key+".i")+"'>"+eval(evalStr+key+".n")+"</option>";
             }
         }
         $("select[name='city_id']").html(html);
         $("select[name='city_id']").ui_select({refresh:true});
+    }
+    
+    /**
+     * 加载月份中的天数
+     * @param $year  年份
+     * @param $month 月份 1-12
+     */
+    function load_month_day(year,month)
+    {
+         var monthday = [31,28,31,30,31,30,31,31,30,31,30,31];  //12个月份的默认天数
+         if((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)){ //闰年
+            monthday[1] = 29;
+         }
+         return monthday[month-1];
     }
 </script>
 {include file="jsd/user_footer.html"}
