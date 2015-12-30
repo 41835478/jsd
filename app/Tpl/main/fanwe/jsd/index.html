@@ -1,0 +1,182 @@
+{include file="jsd/user_unlogin_header.html"}
+<!--banner-->
+<section class="banner">
+    <div id="mySwipe" class="swipe">
+        <div class="swipe-wrap" >
+            <div data-index="0"> <a href=""><img src="{$APP_ROOT}/public/jsd/images/banle.jpg" ></a></div>
+            <div data-index="1"> <a href=""><img src="{$APP_ROOT}/public/jsd/images/banle.jpg"></a></div>
+            <div data-index="2"> <a href=""><img src="{$APP_ROOT}/public/jsd/images/banle.jpg"></a></div>
+        </div>
+    </div>
+    <ul class="position" id="position">
+        <li class=""></li>
+        <li class=""></li>
+        <li class=""></li>
+    </ul>
+</section>
+<!--content-->
+<section class="content">
+    <section class=" vertical-view">
+        <ul>
+            <li>
+                <a href="{$service_list_url}">
+                    <img src="{$APP_ROOT}/public/jsd/images/service.png">
+                    <p>预约服务</p>
+                </a>
+            </li>
+            <li>
+                <a href="{$technician_list_url}">
+                    <img src="{$APP_ROOT}/public/jsd/images/technician.png">
+                    <p>预约技师</p>
+                </a>
+            </li>
+            <li>
+                <a href="{$order_list_url}">
+                    <img src="{$APP_ROOT}/public/jsd/images/personal.png">
+                    <p>我的按摩</p>
+                </a>
+            </li>
+            <li>
+                <a href="tel:4006046315">
+                    <img src="{$APP_ROOT}/public/jsd/images/Customer-.png">
+                    <p>联系客服</p>
+                </a>
+            </li>
+        </ul>
+    </section>
+    <section class=" horizontal-view">
+        <ul>
+            <li>
+                <a href="#">
+                    <img src="{$APP_ROOT}/public/jsd/images/select_1.jpg">
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <img src="{$APP_ROOT}/public/jsd/images/select_2.jpg">
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <img src="{$APP_ROOT}/public/jsd/images/select_3.jpg">
+                </a>
+            </li>
+        </ul>
+    </section>
+    <section class="Choose_box">
+        <section class="Choose">
+            <ul>
+                <li>
+                    <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                    <P>
+                        <i class="fl h3_1">头部按摩</i>
+                        <i class="fr red">380元</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">销量：6871</i>
+                        <i class="fr secon">40分钟</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">疏通气血，祛除疼痛</i>
+                        <a href="service_data.html" class="fr">预约</a>
+                    </P>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                    <P>
+                        <i class="fl h3_1">头部按摩</i>
+                        <i class="fr red">380元</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">销量：6871</i>
+                        <i class="fr secon">40分钟</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">疏通气血，祛除疼痛</i>
+                        <a href="service_data.html" class="fr">预约</a>
+                    </P>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                    <P>
+                        <i class="fl h3_1">头部按摩</i>
+                        <i class="fr red">380元</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">销量：6871</i>
+                        <i class="fr secon">40分钟</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">疏通气血，祛除疼痛</i>
+                        <a href="service_data.html" class="fr">预约</a>
+                    </P>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                    <P>
+                        <i class="fl h3_1">头部按摩</i>
+                        <i class="fr red">380元</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">销量：6871</i>
+                        <i class="fr secon">40分钟</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">疏通气血，祛除疼痛</i>
+                        <a href="service_data.html" class="fr">预约</a>
+                    </P>
+                </li>
+            </ul>
+            <ul>
+                <li>
+                    <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                    <P>
+                        <i class="fl h3_1">头部按摩</i>
+                        <i class="fr red">380元</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">销量：6871</i>
+                        <i class="fr secon">40分钟</i>
+                    </P>
+                    <P>
+                        <i class="fl secon">疏通气血，祛除疼痛</i>
+                        <a href="service_data.html" class="fr">预约</a>
+                    </P>
+                </li>
+            </ul>
+        </section>
+    </section>
+</section>
+<script>
+    $(function() {
+        var elem = document.getElementById('mySwipe');
+        window.mySwipe = Swipe(elem, {
+            startSlide: 0,
+            speed: 500,
+            auto: 5000,
+            continuous: true,
+            disableScroll: true,
+            stopPropagation: false,
+            callback: function(index, element) {
+                var i = bullets.length;
+                while (i--) {
+                    bullets[i].className = ' ';
+                }
+                bullets[index].className = 'on';
+            },
+            transitionEnd: function(index, element) {},
+            getPos: function(index, element) {
+                alert(index);
+            }
+        });
+        var bullets = document.getElementById('position').getElementsByTagName('li');
+        bullets[0].className = 'on';
+    });
+</script>
+{include file="jsd/user_footer.html"}

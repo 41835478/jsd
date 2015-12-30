@@ -1,0 +1,40 @@
+<?php echo $this->fetch('jsd/global_header.html'); ?>
+<section class="order_data_box">
+    <section class="top_data">
+        <img src="<?php echo $this->_var['APP_ROOT']; ?>/public/jsd/images/bj_3.png">
+        <ul>
+            <li class="return"><a href="index.html">返回</a> </li>
+            <li class="phone"><i>18684357695</i></li>
+        </ul>
+    </section>
+</section>
+<section class="jiesu_order" style="margin-bottom:0">
+    <ul>
+        <li><b class="fl">头部按摩</b><p class="fr">X1</p></li>
+        <li><span class="fl"><i>二星</i><i>45分钟</i></span><em class="fr">¥338</em></li>
+    </ul>
+</section>
+<section class="dojishi">
+    <h2>服务倒计时</h2>
+    <div id="times">
+        <div class="hours"></div>
+        <div class="minutes"></div>
+        <div class="seconds"></div>
+    </div>
+    <ul>
+        <li><a href="#">评价</a> </li>
+    </ul>
+</section>
+<script type="text/javascript">
+    $(function() {
+        var d = new Date();
+//        var myDate = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + (d.getDate() + 1) + ' 00:00:00';
+        var myDate = '2015/12/23 17:00:00';
+//        alert(myDate)
+        $('#times').flipTimer({
+            direction: 'down',
+            date: myDate
+        });
+    });
+</script>
+<?php echo $this->fetch('jsd/manager_technician_footer.html'); ?>

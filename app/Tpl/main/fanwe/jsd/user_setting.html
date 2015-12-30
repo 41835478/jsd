@@ -1,0 +1,90 @@
+{include file="jsd/user_login_header.html"}
+<script type="text/javascript" src="{$APP_ROOT}/system/region.js"></script>
+<section class="set_up">
+    <form>
+        <p class="tietin">个人资料</p>
+        <ul class="zilao">
+            <li>
+                <span>手机</span>
+                <i>{$jsd_user_data.mobile}</i>
+            </li>
+            <li>
+                <span>邮箱</span>
+                <input type="email" value="{$jsd_user_data.email}">
+            </li>
+            <li>
+                <span>地址</span>
+                <select id="settings_province_id" name="province_id" class="ui-select" height="200">
+                        <option value="0">所在省份</option>
+                        {foreach from=$region_lv2 item=lv2}
+                        <option {if $lv2.selected eq 1}selected="selected"{/if} value="{$lv2.id}">{$lv2.name}</option>
+                        {/foreach}
+                </select>
+                <select id="settings_city_id" name="city_id" class="ui-select" height="200">
+                        <option value="0">所在城市</option>		
+                        {foreach from=$region_lv3 item=lv3}
+                        <option {if $lv3.selected eq 1}selected="selected"{/if} value="{$lv3.id}">{$lv3.name}</option>
+                        {/foreach}
+                </select>
+                <input type="text" value="">
+            </li>
+            <li>
+                <span>生日</span>
+                <input type="text" value="{$jsd_user_data.byear}-{$jsd_user_data.bmonth}-{$jsd_user_data.bday}">
+            </li>
+            <li>
+                <span>称呼</span>
+                <input type="text" value="{$jsd_user_data.user_name}">
+            </li>
+        </ul>
+        <ul class="paoswodr">
+            <p class="tietin">修改密码</p>
+            <li>
+                <span>旧密码</span>
+                <input type="password">
+            </li>
+            <li>
+                <span>设置新密码</span>
+                <input type="password">
+            </li>
+            <li>
+                <span>确认新密码</span>
+                <input type="password">
+            </li>
+        </ul>
+        <ul class="botton">
+            <input type="submit" value="确认修改">
+        </ul>
+    </form>
+</section>
+</section>
+
+<script>
+    //切换地区
+    $(document).ready(function(){	
+        $("select[name='province_id']").bind("change",function(){
+            load_city();
+        });
+    })
+
+    //载入城市
+    function load_city()
+    {
+        var id = $("select[name='province_id']").val();
+        var evalStr="regionConf.r"+id+".c";
+        if(id==0){
+            var html = "<option value='0'>所在城市</option>";
+        }else{
+            var regionConfs=eval(evalStr);
+            evalStr+=".";
+            var html = "<option value='0'>所在城市</option>";
+            for(var key in regionConfs)
+            {
+                html+="<option value='"+eval(evalStr+key+".i")+"'>"+eval(evalStr+key+".n")+"</option>";
+            }
+        }
+        $("select[name='city_id']").html(html);
+        $("select[name='city_id']").ui_select({refresh:true});
+    }
+</script>
+{include file="jsd/user_footer.html"}
