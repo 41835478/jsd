@@ -36,7 +36,7 @@ define("LOGIN_STATUS_TEMP",2); //临时登录
 		$user_data['update_time'] = NOW_TIME;
 		$user_data['login_ip'] = CLIENT_IP;
 		$user_data['login_time'] = NOW_TIME;
-		$user_data['is_tmp'] = 1;
+		$user_data['is_tmp'] = 0;
 		$user_data['pid'] = $GLOBALS['ref_uid'];
 		$user_data['is_effect'] = 1;
 		
@@ -136,81 +136,91 @@ define("LOGIN_STATUS_TEMP",2); //临时登录
 	 * 不会更新保存的字段为：score,money,verify,pid
 	 */
 	function save_user($user_data,$mode='INSERT')
-	{		
+	{            
 		//开始数据验证
 		$res = array('status'=>1,'info'=>'','data'=>''); //用于返回的数据
-		if(trim($user_data['user_name'])=='')
-		{
-			$field_item['field_name'] = 'user_name';
-			$field_item['error']	=	EMPTY_ERROR;
-			$res['status'] = 0;
-			$res['data'] = $field_item;
-			return $res;
-		}
-		if(!check_username($user_data['user_name']))
-		{
-			$field_item['field_name'] = 'user_name';
-			$field_item['error']	=	FORMAT_ERROR;
-			$res['status'] = 0;
-			$res['data'] = $field_item;
-			return $res;
-		}
-		if($GLOBALS['db']->getOne("select count(*) from ".DB_PREFIX."user where (user_name = '".trim($user_data['user_name'])."' or mobile = '".trim($user_data['user_name'])."' or email = '".trim($user_data['user_name'])."') and id <> ".intval($user_data['id']))>0)
-		{
-			$field_item['field_name'] = 'user_name';
-			$field_item['error']	=	EXIST_ERROR;
-			$res['status'] = 0;
-			$res['data'] = $field_item;
-			return $res;
-		}
-		if($GLOBALS['db']->getOne("select count(*) from ".DB_PREFIX."user where (user_name = '".trim($user_data['email'])."' or mobile = '".trim($user_data['email'])."' or email = '".trim($user_data['email'])."') and id <> ".intval($user_data['id']))>0)
-		{
-			$field_item['field_name'] = 'email';
-			$field_item['error']	=	EXIST_ERROR;
-			$res['status'] = 0;
-			$res['data'] = $field_item;
-			return $res;
-		}
-		if(trim($user_data['email'])=='')
-		{
-			$field_item['field_name'] = 'email';
-			$field_item['error']	=	EMPTY_ERROR;
-			$res['status'] = 0;
-			$res['data'] = $field_item;
-			return $res;
-		}
-		if(!check_email(trim($user_data['email'])))
-		{
-			$field_item['field_name'] = 'email';
-			$field_item['error']	=	FORMAT_ERROR;
-			$res['status'] = 0;
-			$res['data'] = $field_item;
-			return $res;
-		}
-
+                if(isset($user_data['user_name'])){
+                    if(trim($user_data['user_name'])=='')
+                    {
+                            $field_item['field_name'] = 'user_name';
+                            $field_item['error']	=	EMPTY_ERROR;
+                            $res['status'] = 0;
+                            $res['data'] = $field_item;
+                            return $res;
+                    }
+                    if(!check_username($user_data['user_name']))
+                    {
+                            $field_item['field_name'] = 'user_name';
+                            $field_item['error']	=	FORMAT_ERROR;
+                            $res['status'] = 0;
+                            $res['data'] = $field_item;
+                            return $res;
+                    }
+                    if($GLOBALS['db']->getOne("select count(*) from ".DB_PREFIX."user where (user_name = '".trim($user_data['user_name'])."' or mobile = '".trim($user_data['user_name'])."' or email = '".trim($user_data['user_name'])."') and id <> ".intval($user_data['id']))>0)
+                    {
+                            $field_item['field_name'] = 'user_name';
+                            $field_item['error']	=	EXIST_ERROR;
+                            $res['status'] = 0;
+                            $res['data'] = $field_item;
+                            return $res;
+                    }
+                }
 		
-		if(!check_mobile(trim($user_data['mobile'])))
-		{
-			$field_item['field_name'] = 'mobile';
-			$field_item['error']	=	FORMAT_ERROR;
-			$res['status'] = 0;
-			$res['data'] = $field_item;
-			return $res;
-		}
-		if($user_data['mobile']!=''&&$GLOBALS['db']->getOne("select count(*) from ".DB_PREFIX."user where (user_name = '".trim($user_data['mobile'])."' or mobile = '".trim($user_data['mobile'])."' or email = '".trim($user_data['mobile'])."') and id <> ".intval($user_data['id']))>0)
-		{
-			$field_item['field_name'] = 'mobile';
-			$field_item['error']	=	EXIST_ERROR;
-			$res['status'] = 0;
-			$res['data'] = $field_item;
-			return $res;
-		}
+                //jsd邮箱可以修改
+//		if($GLOBALS['db']->getOne("select count(*) from ".DB_PREFIX."user where (user_name = '".trim($user_data['email'])."' or mobile = '".trim($user_data['email'])."' or email = '".trim($user_data['email'])."') and id <> ".intval($user_data['id']))>0)
+//		{
+//			$field_item['field_name'] = 'email';
+//			$field_item['error']	=	EXIST_ERROR;
+//			$res['status'] = 0;
+//			$res['data'] = $field_item;
+//			return $res;
+//		}
+                if(isset($user_data['email'])){
+                    if(trim($user_data['email'])=='')
+                    {
+                            $field_item['field_name'] = 'email';
+                            $field_item['error']	=	EMPTY_ERROR;
+                            $res['status'] = 0;
+                            $res['data'] = $field_item;
+                            return $res;
+                    }
+                    if(!check_email(trim($user_data['email'])))
+                    {
+                            $field_item['field_name'] = 'email';
+                            $field_item['error']	=	FORMAT_ERROR;
+                            $res['status'] = 0;
+                            $res['data'] = $field_item;
+                            return $res;
+                    }
+                }
 
-		
+                if(isset($user_data['mobile'])){
+                    if(!check_mobile(trim($user_data['mobile'])))
+                    {
+                            $field_item['field_name'] = 'mobile';
+                            $field_item['error']	=	FORMAT_ERROR;
+                            $res['status'] = 0;
+                            $res['data'] = $field_item;
+                            return $res;
+                    }
+                    if($user_data['mobile']!=''&&$GLOBALS['db']->getOne("select count(*) from ".DB_PREFIX."user where (user_name = '".trim($user_data['mobile'])."' or mobile = '".trim($user_data['mobile'])."' or email = '".trim($user_data['mobile'])."') and id <> ".intval($user_data['id']))>0)
+                    {
+                            $field_item['field_name'] = 'mobile';
+                            $field_item['error']	=	EXIST_ERROR;
+                            $res['status'] = 0;
+                            $res['data'] = $field_item;
+                            return $res;
+                    }
+                }
+
 		//验证结束开始插入数据
+                if(isset($user_data['user_name']))
 		$user['user_name'] = $user_data['user_name'];
-		$user['create_time'] = NOW_TIME;
+                if($mode == 'INSERT'){
+                    $user['create_time'] = NOW_TIME;
+                }
 		$user['update_time'] = NOW_TIME;
+                if(isset($user_data['pid']))
 		$user['pid'] = $user_data['pid'];
 		if(isset($user_data['province_id']))
 		$user['province_id'] = intval($user_data['province_id']);
@@ -218,6 +228,7 @@ define("LOGIN_STATUS_TEMP",2); //临时登录
 		$user['city_id'] = intval($user_data['city_id']);
 		if(isset($user_data['sex']))
 		$user['sex'] = intval($user_data['sex']);
+                if(isset($user_data['my_intro']))
 		$user['my_intro'] = strim($user_data['my_intro']);
 		if(isset($user_data['byear']))
 		$user['byear'] = intval($user_data['byear']);
@@ -225,7 +236,9 @@ define("LOGIN_STATUS_TEMP",2); //临时登录
 		$user['bmonth'] = intval($user_data['bmonth']);
 		if(isset($user_data['bday']))
 		$user['bday'] = intval($user_data['bday']);
-		
+                if(isset($user_data['address_detail']))
+		$user['address_detail'] = $user_data['address_detail'];
+                
 		if(isset($user_data['is_merchant']))
 		{
 			$user['is_merchant'] = intval($user_data['is_merchant']);
@@ -263,6 +276,7 @@ define("LOGIN_STATUS_TEMP",2); //临时登录
 		}
 		
 		$user['email'] = $user_data['email'];
+                if(isset($user_data['mobile']))
 		$user['mobile'] = $user_data['mobile'];
 		if($mode == 'INSERT')
 		{
@@ -274,7 +288,7 @@ define("LOGIN_STATUS_TEMP",2); //临时登录
 			$user['code'] = $db_user['code'];
 			if($db_user['is_tmp']==0) //非临时用户不能改名
 			{
-				$user['user_name'] = $db_user['user_name'];
+//				$user['user_name'] = $db_user['user_name'];
 			}		
 			else
 			{
@@ -345,6 +359,7 @@ define("LOGIN_STATUS_TEMP",2); //临时登录
 			unset($user['pid']);
 			$where = "id=".intval($user_data['id']);
 		}
+                
 		if($GLOBALS['db']->autoExecute(DB_PREFIX."user",$user,$mode,$where))
 		{
 			

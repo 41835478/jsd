@@ -21,4 +21,14 @@ define("NORMAL_USER",1);
 define("TECHNICIAN",2);
 define("MANAGER",3);
 define("REGISTER_MOBILE_MOD",1);
+
+define("SETTING_BASE_INFO",1);
+define("SETTING_PWD",2);
+define("SETTING_BASE_INFO_PWD",3);
+
+define("ORDER_STATUS_WAIT",1);
+define("ORDER_STATUS_DOING",2);
+define("ORDER_STATUS_DONE",3);
+define("ORDER_STATUS_CANCEL",4);
+
 ?>

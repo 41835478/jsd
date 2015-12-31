@@ -1,7 +1,7 @@
 {include file="jsd/user_login_header.html"}
         <section class="My_order">
-            <p>我的订单</p>
-            <ul>
+            <p id="my_order">我的订单</p>
+            <ul id="my_order_list">
                 <li class="top_nav_1">
                     <a href="{$order_list_url}">
                         <img src="{$APP_ROOT}/public/jsd/images/chakan_q.png">
@@ -29,8 +29,8 @@
             </ul>
         </section>
     <section class="My_wallet">
-        <p>我的钱包</p>
-        <ul>
+        <p id="my_wallet">我的钱包</p>
+        <ul id="my_wallet_list">
             <li class="erji_nav_1">
                 <a href="{$payment_url}">
                     <img src="{$APP_ROOT}/public/jsd/images/zhangh.png">
@@ -55,4 +55,17 @@
         <a href="{$setting_url}">设置</a>
     </section>
 </section>
+<script>
+$(document).ready(function(){
+    //个人资料
+    $("#my_order").click(function(){
+        $("#my_order_list").slideToggle();
+    });
+
+    //密码
+    $("#my_wallet").click(function(){
+        $("#my_wallet_list").slideToggle();
+    });
+})    
+</script>
 {include file="jsd/user_footer.html"}

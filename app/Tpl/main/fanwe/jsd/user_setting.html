@@ -10,7 +10,7 @@
             </li>
             <li>
                 <span>邮箱</span>
-                <input type="email" name="email" value="{$jsd_user_data.email}">
+                <input type="text" id="email" value="{$jsd_user_data.email}">
             </li>
             <li>
                 <span>地址</span>
@@ -26,7 +26,7 @@
                     <option {if $lv3.selected eq 1}selected="selected"{/if} value="{$lv3.id}">{$lv3.name}</option>
                     {/foreach}
                 </select>
-                <input type="text" value="<?php echo $GLOBALS['jsd_user_data']['address_detail'];?>">
+                <input type="text" id="address_detail" value="<?php echo $GLOBALS['jsd_user_data']['address_detail'];?>">
             </li>
             <li>
                 <span>生日</span>
@@ -57,33 +57,33 @@
             </li>
             <li>
                 <span>称呼</span>
-                <input type="text" value="{$jsd_user_data.user_name}">
+                <input type="text" id="user_name" value="{$jsd_user_data.user_name}">
             </li>
         </ul>            
         <p class="tietin" id='pwd_change'>修改密码</p>
         <ul class="paoswodr" style="display: none;border-top: 1px">
             <li>
                 <span>旧密码</span>
-                <input type="password">
+                <input type="password" id="origin_pwd">
             </li>
             <li>
                 <span>设置新密码</span>
-                <input type="password">
+                <input type="password" id="new_pwd">
             </li>
             <li>
                 <span>确认新密码</span>
-                <input type="password">
+                <input type="password" id="new_pwd_rep">
             </li>
         </ul>
         <ul class="botton">
-            <input type="submit" value="确认修改" onclick="update_form()">
+            <input type="button" value="确认修改" onclick="update_form()">
         </ul>
         
         <input type="hidden" id='update_type' value="0">
     </form>
 </section>
 </section>
-
+{include file="jsd/common_notice_box.html"}
 <script>
     $(document).ready(function(){
         //个人资料
@@ -123,59 +123,196 @@
 	});
     });
     
-    function update_form(){
-        var update_type = $("#update_type").val();
-        switch(update_type){
-            case 1:
-                //验证字段
-                var email = $(form).find("input[name='email']");
-                if($.trim(email.val())==""){
-                    form_tip(email,"请输入邮箱账号");
-                    return false;
-                }
-                if(!$.checkEmail(email.val()))
-                {
-                        form_err(email,"邮箱格式不正确");
-                        return false;
-                };
-              break;
-            case 2:
-              ;
-              break;
-            default:
-              ;
-              break;
+    function email_check(email){
+        if($.trim(email)==""){
+            $(".queren").show();
+            $(".complete").show();
+            message_box_show('请输入邮箱账号');
+            return false;
+        }
+        if(!$.checkEmail(email))
+        {
+            $(".queren").show();
+            $(".complete").show();
+            message_box_show('邮箱格式不正确');
+            return false;
         }
         
-        if(mobile_check() && pwd_check()){
-            var mobile = $('#mobile').val();
-            var user_pwd = $('#user_pwd').val();
-            
-            $.ajax({
-                type : 'post',
-                url : '{$ajax_login_url}',
-                data : {'mobile' : mobile,'user_pwd' : user_pwd},
-                dataType : 'json',
-                success : function(data) 
-                {
-                    if(!data.status){
-                        //错误消息
-                        $(".queren").show();
-                        $(".complete").show();
-                        message_box_show(data.info);
-                        return false;
-                    }else{
-                        //发送成功
-                        $(".queren").show();
-                        $(".complete").show();
-                        
-                        message_box_show(data.info);
-                        $('#message_box').siblings(".guan_2").click(function(){
-                            window.location.href="{$mypage_url}";
-                        });
-                    }
+        return true;
+    }
+    
+    function address_detail_check(address_detail){
+        if($.trim(address_detail)==""){
+            $(".queren").show();
+            $(".complete").show();
+            message_box_show('请输入详细地址');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function user_name_check(user_name){
+        if($.trim(user_name)==""){
+            $(".queren").show();
+            $(".complete").show();
+            message_box_show('请输入称呼');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function pwd_check(origin_pwd,new_pwd,new_pwd_rep){
+        if($.trim(origin_pwd)==""){
+            $(".queren").show();
+            $(".complete").show();
+            message_box_show('请输入旧密码');
+            return false;
+        }
+        if($.trim(new_pwd)==""){
+            $(".queren").show();
+            $(".complete").show();
+            message_box_show('请输入新密码');
+            return false;
+        }
+        
+        if(new_pwd != new_pwd_rep){
+            $(".queren").show();
+            $(".complete").show();
+            message_box_show('请确认两次输入的密码一致');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function update_form(){
+        var update_type = $("#update_type").val();
+        
+        //data
+        var settings_province_id = $('#settings_province_id').val();
+        var settings_city_id = $('#settings_city_id').val();
+        var settings_byear = $('#settings_byear').val();
+        var settings_bmonth = $('#settings_bmonth').val();
+        var settings_bday = $('#settings_bday').val();
+        var email = $('#email').val();
+        var address_detail = $('#address_detail').val();
+        var user_name = $('#user_name').val();
+        
+        var origin_pwd = $('#origin_pwd').val();
+        var new_pwd = $('#new_pwd').val();
+        var new_pwd_rep = $('#new_pwd_rep').val();
+        switch(update_type){
+            case '1': 
+                if(email_check(email) && address_detail_check(address_detail) && user_name_check(user_name)){
+                    $.ajax({
+                        type : 'post',
+                        url : '{$ajax_setting_url}',
+                        data : {
+                            'update_type':update_type,
+                            'province_id' : settings_province_id,
+                            'city_id' : settings_city_id,
+                            'byear' : settings_byear,
+                            'bmonth' : settings_bmonth,
+                            'bday' : settings_bday,
+                            'email' : email,
+                            'address_detail' : address_detail,
+                            'user_name' : user_name
+                        },
+                        dataType : 'json',
+                        success : function(data) 
+                        {
+                            if(!data.status){
+                                //错误消息
+                                $(".queren").show();
+                                $(".complete").show();
+                                message_box_show(data.info);
+                                return false;
+                            }else{
+                                //发送成功
+                                $(".queren").show();
+                                $(".complete").show();
+                                message_box_show(data.info);
+                            }
+                        }
+                    });
                 }
-            });
+              break;
+            case '2':
+                if(pwd_check(origin_pwd,new_pwd,new_pwd_rep)){
+                    $.ajax({
+                        type : 'post',
+                        url : '{$ajax_setting_url}',
+                        data : {
+                            'update_type':update_type,
+                            'origin_pwd' : origin_pwd,
+                            'new_pwd' : new_pwd,
+                            'new_pwd_rep' : new_pwd_rep
+                        },
+                        dataType : 'json',
+                        success : function(data) 
+                        {
+                            if(!data.status){
+                                //错误消息
+                                $(".queren").show();
+                                $(".complete").show();
+                                message_box_show(data.info);
+                                return false;
+                            }else{
+                                //发送成功
+                                $(".queren").show();
+                                $(".complete").show();
+                                message_box_show(data.info);
+                            }
+                        }
+                    });
+                }
+              break;
+            case '3':
+                if(email_check(email) && address_detail_check(address_detail) && user_name_check(user_name) && pwd_check(origin_pwd,new_pwd,new_pwd_rep)){
+                    
+                    $.ajax({
+                        type : 'post',
+                        url : '{$ajax_setting_url}',
+                        data : {
+                            'update_type':update_type,
+                            'province_id' : settings_province_id,
+                            'city_id' : settings_city_id,
+                            'byear' : settings_byear,
+                            'bmonth' : settings_bmonth,
+                            'bday' : settings_bday,
+                            'email' : email,
+                            'address_detail' : address_detail,
+                            'user_name' : user_name,
+                            'origin_pwd' : origin_pwd,
+                            'new_pwd' : new_pwd,
+                            'new_pwd_rep' : new_pwd_rep
+                        },
+                        dataType : 'json',
+                        success : function(data) 
+                        {
+                            if(!data.status){
+                                //错误消息
+                                $(".queren").show();
+                                $(".complete").show();
+                                message_box_show(data.info);
+                                return false;
+                            }else{
+                                //发送成功
+                                $(".queren").show();
+                                $(".complete").show();
+                                message_box_show(data.info);
+                            }
+                        }
+                    });
+                }
+              break;
+            default:
+                $(".queren").show();
+                $(".complete").show();
+                message_box_show("当前无修改");
+              break;
         }
     }
 
@@ -185,13 +322,13 @@
      */
     function check_update_type(){
         if ($('.zilao').is(':visible') && !$(".paoswodr").is(':visible')) {
-            $("#update_type").val(1);
+            $("#update_type").val('1');
         }else if(!$('.zilao').is(':visible') && $(".paoswodr").is(':visible')){
-            $("#update_type").val(2);
+            $("#update_type").val('2');
         }else if($('.zilao').is(':visible') && $(".paoswodr").is(':visible')){
-            $("#update_type").val(3);
+            $("#update_type").val('3');
         }else{
-            $("#update_type").val(0);
+            $("#update_type").val('0');
         }
     }
         

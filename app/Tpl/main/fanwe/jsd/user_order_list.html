@@ -1,69 +1,110 @@
 {include file="jsd/user_login_header.html"}
     <section class="new_order">
-        <p>新订单</p>
-        <ul>
-            <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
-                <span class="fl data">
-                    <p>头部按摩</p>
-                    <p>38元</p>
-                    <P>x1</P>
-                </span>
-                <span class="fr rig">
-                    <p>交易中</p>
-                    <a href="#">查看订单</a>
-                </span>
-            </li>
-            <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">取消订单</a> </i>
-        </ul>
+        <p id="new_order">新订单</p>
+        <div id="new_order_list">
+            {foreach key=key item=new_order from=$new_data}
+                <ul id="new_order_list">
+                    <li>
+                        <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                        <span class="fl data">
+                            <p>{$new_order.name}</p>
+                            <p>{$new_order.price}</p>
+                            <P>x{$new_order.amount}</P>
+                        </span>
+                        <span class="fr rig">
+                            <p>交易中</p>
+                            <a href="#">查看订单</a>
+                        </span>
+                    </li>
+                    <i>{$new_order.created_at}  共{$new_order.amount}笔消费  合计：{$new_order.sum}元<a class="fr" href="#">取消订单</a> </i>
+                </ul>
+            {foreachelse}
+                没有新订单
+            {/foreach}
+            
+        </div>
     </section>
     <section class="new_order">
-        <p>已完成订单</p>
-        <ul class="ca_wan">
-            <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
-                <span class="fl data">
-                    <p>头部按摩</p>
-                    <p>38元</p>
-                    <P>x1</P>
-                </span>
-                <span class="fr rig">
-                    <p>交易成功</p>
-                    <a href="#">评价</a>
-                </span>
-            </li>
-            <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">删除订单</a> </i>
-        </ul>
-        <ul class="ca_wan">
-            <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
-                <span class="fl data">
-                    <p>头部按摩</p>
-                    <p>38元</p>
-                    <P>x1</P>
-                </span>
-                <span class="fr rig">
-                    <p>交易成功</p>
-                    <a class="over" href="#">已评价</a>
-                </span>
-            </li>
-            <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">删除订单</a> </i>
-        </ul>
-        <ul class="ca_wan">
-            <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
-                <span class="fl data">
-                    <p>头部按摩</p>
-                    <p>38元</p>
-                    <P>x1</P>
-                </span>
-                <span class="fr rig">
-                    <p>交易成功</p>
-                    <a href="#">评价</a>
-                </span>
-            </li>
-            <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">删除订单</a> </i>
-        </ul>
+        <p id="order_done">已完成订单</p>
+        <div id="order_done_list">
+            {foreach key=key item=done_order from=$done_data}
+                <ul id="new_order_list">
+                    <li>
+                        <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                        <span class="fl data">
+                            <p>{$done_order.name}</p>
+                            <p>{$done_order.price}</p>
+                            <P>x{$done_order.amount}</P>
+                        </span>
+                        <span class="fr rig">
+                            <p>交易成功</p>
+                            <a href="#">评价</a>
+                        </span>
+                    </li>
+                    <i>{$done_order.created_at}  共{$done_order.amount}笔消费  合计：{$done_order.sum}元<a class="fr" href="#">取消订单</a> </i>
+                </ul>
+            {foreachelse}
+                没有新订单
+            {/foreach}
+            <ul class="ca_wan">
+                <li>
+                    <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                    <span class="fl data">
+                        <p>头部按摩</p>
+                        <p>38元</p>
+                        <P>x1</P>
+                    </span>
+                    <span class="fr rig">
+                        <p>交易成功</p>
+                        <a href="#">评价</a>
+                    </span>
+                </li>
+                <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">删除订单</a> </i>
+            </ul>
+            <ul class="ca_wan">
+                <li>
+                    <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                    <span class="fl data">
+                        <p>头部按摩</p>
+                        <p>38元</p>
+                        <P>x1</P>
+                    </span>
+                    <span class="fr rig">
+                        <p>交易成功</p>
+                        <a class="over" href="#">已评价</a>
+                    </span>
+                </li>
+                <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">删除订单</a> </i>
+            </ul>
+            <ul class="ca_wan">
+                <li>
+                    <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                    <span class="fl data">
+                        <p>头部按摩</p>
+                        <p>38元</p>
+                        <P>x1</P>
+                    </span>
+                    <span class="fr rig">
+                        <p>交易成功</p>
+                        <a href="#">评价</a>
+                    </span>
+                </li>
+                <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">删除订单</a> </i>
+            </ul>
+        </div>
     </section>
 </section>
+<script>
+$(document).ready(function(){
+    //个人资料
+    $("#new_order").click(function(){
+        $("#new_order_list").slideToggle();
+    });
+
+    //密码
+    $("#order_done").click(function(){
+        $("#order_done_list").slideToggle();
+    });
+})    
+</script>
 {include file="jsd/user_footer.html"}
