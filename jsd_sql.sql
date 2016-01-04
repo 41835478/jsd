@@ -1871,6 +1871,26 @@ CREATE TABLE `fanwe_images_group_link` (
 
 /*Data for the table `fanwe_images_group_link` */
 
+/*Table structure for table `fanwe_jsd_comment` */
+
+DROP TABLE IF EXISTS `fanwe_jsd_comment`;
+
+CREATE TABLE `fanwe_jsd_comment` (
+  `comment_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `comment` varchar(255) DEFAULT NULL,
+  `order_id` int(11) NOT NULL,
+  `to_comment_id` int(11) DEFAULT NULL,
+  `is_anony` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `is_valid` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`comment_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+/*Data for the table `fanwe_jsd_comment` */
+
+insert  into `fanwe_jsd_comment`(`comment_id`,`comment`,`order_id`,`to_comment_id`,`is_anony`,`created_at`,`updated_at`,`is_valid`) values (3,'姐姐是化妆师！！很好！',2,NULL,1,'2016-01-04 15:49:54','2016-01-04 15:49:54',1);
+
 /*Table structure for table `fanwe_jsd_order` */
 
 DROP TABLE IF EXISTS `fanwe_jsd_order`;
@@ -1885,15 +1905,36 @@ CREATE TABLE `fanwe_jsd_order` (
   `is_technician_delete` tinyint(1) DEFAULT '0' COMMENT '技师是否删除',
   `is_manager_delete` tinyint(1) DEFAULT '0' COMMENT '经理是否删除',
   `is_comment` tinyint(1) DEFAULT '0' COMMENT '用户是否评论',
+  `done_time` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `is_valid` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`order_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 /*Data for the table `fanwe_jsd_order` */
 
-insert  into `fanwe_jsd_order`(`order_id`,`user_id`,`service_id`,`amount`,`status`,`is_user_delete`,`is_technician_delete`,`is_manager_delete`,`is_comment`,`created_at`,`updated_at`,`is_valid`) values (1,81,1,2,2,0,0,0,0,'2015-12-31 17:15:15','2015-12-31 17:15:17',1),(2,81,2,3,3,0,0,0,0,'2015-12-31 17:40:47','2015-12-31 17:40:49',1);
+insert  into `fanwe_jsd_order`(`order_id`,`user_id`,`service_id`,`amount`,`status`,`is_user_delete`,`is_technician_delete`,`is_manager_delete`,`is_comment`,`done_time`,`created_at`,`updated_at`,`is_valid`) values (1,81,1,2,2,0,0,0,0,'2016-01-04 11:51:33','2015-12-31 17:15:15','2015-12-31 17:15:17',1),(2,81,2,3,3,0,0,0,1,'2016-01-04 11:51:34','2015-12-31 17:40:47','2016-01-04 15:49:55',1),(3,81,3,1,3,0,0,0,0,'2016-01-04 11:51:36','2016-01-04 09:32:48','2016-01-04 09:32:50',1);
+
+/*Table structure for table `fanwe_jsd_star` */
+
+DROP TABLE IF EXISTS `fanwe_jsd_star`;
+
+CREATE TABLE `fanwe_jsd_star` (
+  `star_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `technician_id` int(11) DEFAULT NULL,
+  `score` tinyint(1) DEFAULT '1' COMMENT '1-5星',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `is_valid` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`star_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+/*Data for the table `fanwe_jsd_star` */
+
+insert  into `fanwe_jsd_star`(`star_id`,`order_id`,`user_id`,`technician_id`,`score`,`created_at`,`updated_at`,`is_valid`) values (3,2,81,1,5,'2016-01-04 15:49:55','2016-01-04 15:49:55',1);
 
 /*Table structure for table `fanwe_jsd_technician` */
 
@@ -1903,17 +1944,40 @@ CREATE TABLE `fanwe_jsd_technician` (
   `technician_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `mobile` varchar(15) NOT NULL,
+  `icon` varchar(255) DEFAULT NULL,
   `level` float DEFAULT '1' COMMENT '1-5星',
+  `gender` tinyint(1) DEFAULT '1' COMMENT '1男 2女',
   `introduction` varchar(255) DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `is_valid` tinyint(1) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `service_area` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `is_valid` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`technician_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 /*Data for the table `fanwe_jsd_technician` */
 
-insert  into `fanwe_jsd_technician`(`technician_id`,`name`,`mobile`,`level`,`introduction`,`created_at`,`updated_at`,`is_valid`) values (1,'王冉','13695685701',1,'服务流程/时长：精修甲型+清洁+软化死皮+去死皮+修型+除尘+处理甲面+清洁甲缝+涂护甲底胶+涂甲油胶+法式/渐变/跳色+封层+清洁+清洁手部皮肤+深层清洁+营养油+护手霜精修甲型+清洁+软化死皮+去死皮+修型+除尘+处理甲面+清洁甲缝+涂护甲底油+涂甲油胶+法式/渐变/跳色+封层+清洁+清洁手部皮肤+深层清洁+营养油+护手霜','2015-12-31 17:12:30','2015-12-31 17:12:31',1);
+insert  into `fanwe_jsd_technician`(`technician_id`,`name`,`mobile`,`icon`,`level`,`gender`,`introduction`,`address`,`service_area`,`created_at`,`updated_at`,`is_valid`) values (1,'王冉','13695685701','http://i.ce.cn/fashion/mlc/201512/07/W020151207291027057561.png',4,2,'服务流程/时长：精修甲型+清洁+软化死皮+去死皮+修型+除尘+处理甲面+清洁甲缝+涂护甲底胶+涂甲油胶+法式/渐变/跳色+封层+清','金牛区','蜀汉路,交大路口','2015-12-31 17:12:30','2015-12-31 17:12:31',1),(2,'李艺','13685957122','http://img.xiumei.com/uploadfile/2013/0505/20130505052027280.jpg',3,1,'拥有16年丰富的工作经验，执有国家高级按摩师，擅 长调理肩颈...','锦江区',NULL,'2016-01-04 17:04:04','2016-01-04 17:04:05',1),(3,'王小峰','13585955611','http://s.qdcdn.com/cl/12312231,800,450.jpg',2,1,'化妆师化妆师化妆师化妆师化妆师化妆师化妆师化妆师','成华区','建设路,桐梓林','2016-01-04 17:05:11','2016-01-04 17:05:14',1);
+
+/*Table structure for table `fanwe_jsd_technician_ability` */
+
+DROP TABLE IF EXISTS `fanwe_jsd_technician_ability`;
+
+CREATE TABLE `fanwe_jsd_technician_ability` (
+  `technician_ability_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `technician_type_id` int(11) DEFAULT NULL,
+  `technician_id` int(11) DEFAULT NULL,
+  `type_level` tinyint(1) DEFAULT '1' COMMENT '1-5星级别',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `is_valid` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`technician_ability_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+
+/*Data for the table `fanwe_jsd_technician_ability` */
+
+insert  into `fanwe_jsd_technician_ability`(`technician_ability_id`,`technician_type_id`,`technician_id`,`type_level`,`created_at`,`updated_at`,`is_valid`) values (1,1,1,5,'2016-01-04 17:02:16','2016-01-04 17:02:18',1),(2,2,1,4,'2016-01-04 17:02:22','2016-01-04 17:02:24',1),(3,3,1,3,'2016-01-04 17:02:28','2016-01-04 17:02:30',1),(4,4,1,2,'2016-01-04 17:02:35','2016-01-04 17:02:36',1),(5,5,1,1,'2016-01-04 17:02:42','2016-01-04 17:02:43',1),(6,3,2,5,'2016-01-04 17:05:35','2016-01-04 17:05:37',1),(7,2,2,4,'2016-01-04 17:05:43','2016-01-04 17:05:45',1),(8,5,2,1,'2016-01-04 17:05:56','2016-01-04 17:05:59',1),(9,1,3,5,'2016-01-04 17:06:08','2016-01-04 17:06:14',1),(10,3,3,5,'2016-01-04 17:06:19','2016-01-04 17:06:20',1);
 
 /*Table structure for table `fanwe_jsd_technician_service` */
 
@@ -1932,11 +1996,28 @@ CREATE TABLE `fanwe_jsd_technician_service` (
   `updated_at` datetime DEFAULT NULL,
   `is_valid` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`service_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 /*Data for the table `fanwe_jsd_technician_service` */
 
-insert  into `fanwe_jsd_technician_service`(`service_id`,`name`,`price`,`time`,`technician_id`,`description`,`notice`,`image`,`created_at`,`updated_at`,`is_valid`) values (1,'精修甲型',28,45,1,'精修甲型精修甲型精修甲型精修甲型精修甲型精修甲型精修甲型','请提前预约！因为太火爆了！','http://p0.meituan.net/deal/d090a95f3159ebdb6b7d19b6619d891e176928.jpg','2015-12-31 17:14:23','2015-12-31 17:14:24',1),(2,'软化死皮',18,30,1,'软化死皮软化死皮软化死皮软化死皮软化死皮软化死皮软化死皮','请提前预约！因为太火爆了！','http://p0.meituan.net/deal/b67efcc4b2e4a13cef4d7a5b959cc8a962949.jpg','2015-12-31 17:39:09','2015-12-31 17:39:11',1);
+insert  into `fanwe_jsd_technician_service`(`service_id`,`name`,`price`,`time`,`technician_id`,`description`,`notice`,`image`,`created_at`,`updated_at`,`is_valid`) values (1,'精修甲型',28,45,1,'精修甲型精修甲型精修甲型精修甲型精修甲型精修甲型精修甲型','请提前预约！因为太火爆了！','http://p0.meituan.net/deal/d090a95f3159ebdb6b7d19b6619d891e176928.jpg','2015-12-31 17:14:23','2015-12-31 17:14:24',1),(2,'软化死皮',18,30,1,'软化死皮软化死皮软化死皮软化死皮软化死皮软化死皮软化死皮','请提前预约！因为太火爆了！','http://p0.meituan.net/deal/b67efcc4b2e4a13cef4d7a5b959cc8a962949.jpg','2015-12-31 17:39:09','2015-12-31 17:39:11',1),(3,'头部按摩',32,25,1,'头部按摩头部按摩头部按摩头部按摩头部按摩头部按摩头部按摩','请提前预约！因为太火爆了！','http://img.taopic.com/uploads/allimg/110319/9118-110319111P127.jpg','2016-01-04 09:34:10','2016-01-04 09:34:12',1);
+
+/*Table structure for table `fanwe_jsd_technician_type` */
+
+DROP TABLE IF EXISTS `fanwe_jsd_technician_type`;
+
+CREATE TABLE `fanwe_jsd_technician_type` (
+  `technician_type_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `is_valid` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`technician_type_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+
+/*Data for the table `fanwe_jsd_technician_type` */
+
+insert  into `fanwe_jsd_technician_type`(`technician_type_id`,`name`,`created_at`,`updated_at`,`is_valid`) values (1,'按摩理疗','2016-01-04 16:59:31','2016-01-04 16:59:33',1),(2,'刮痧','2016-01-04 16:59:42','2016-01-04 16:59:44',1),(3,'小儿推拿','2016-01-04 17:00:00','2016-01-04 17:00:02',1),(4,'足疗','2016-01-04 17:00:10','2016-01-04 17:00:12',1),(5,'SPA','2016-01-04 17:00:20','2016-01-04 17:00:21',1);
 
 /*Table structure for table `fanwe_link` */
 
