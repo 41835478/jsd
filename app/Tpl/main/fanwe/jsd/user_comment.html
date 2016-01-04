@@ -1,51 +1,103 @@
 {include file="jsd/user_login_header.html"}
     <section class="jiayushijain">
-            <span>成交时间：2015-12-10 20:20</span>
+            <span>成交时间：{$order_data.done_time}</span>
     </section>
     <section class="new_order comments">
-        <p>技师：唐悠悠<img src="{$APP_ROOT}/public/jsd/images/xing.png"><img src="{$APP_ROOT}/public/jsd/images/xing.png"><img src="{$APP_ROOT}/public/jsd/images/xing.png"> </p>
+        <p>技师：{$order_data.tech_name}
+        {foreach item=tech_level from=$order_data.tech_level}
+            <img src="{$APP_ROOT}/public/jsd/images/xing.png">
+        {/foreach}
+        </p>
         <ul>
             <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                <img src="{$order_data.image}">
                 <span class="fl data">
-                    <p>头部按摩</p>
-                    <p>38元</p>
-                    <P>x1</P>
+                    <p>{$order_data.service_name}</p>
+                    <p>{$order_data.price}元</p>
+                    <P>x{$order_data.amount}</P>
                 </span>
                 <span class="fr rig">
                     <p>交易成功</p>
                 </span>
             </li>
-
         </ul>
         <section class="texteuiu">
             <form>
                 <ul>
                     <li>
-                        <textarea></textarea>
+                        <textarea name="comment"></textarea>
                     </li>
                     <li class="nav">
                         <i>为TA打分：</i>
-                        <a href="#javascript;" class="jia">1星</a>
-                        <a href="#javascript;">2星</a>
-                        <a href="#javascript;">3星</a>
-                        <a href="#javascript;">4星</a>
-                        <a href="#javascript;">5星</a>
+                        <a href="#javascript;" class="jia" onclick="set_star(1)">1星</a>
+                        <a href="#javascript;" onclick="set_star(2)">2星</a>
+                        <a href="#javascript;" onclick="set_star(3)">3星</a>
+                        <a href="#javascript;" onclick="set_star(4)">4星</a>
+                        <a href="#javascript;" onclick="set_star(5)">5星</a>
                     </li>
                     <li class="yuanzge">
                         <em>是否匿名：</em>
-                        <input type="radio" name="yuming">
+                        <input type="radio" name="anony" value="1" checked>
                         <span>公开</span>
-                        <input type="radio" name="yuming">
+                        <input type="radio" name="anony" value="2">
                         <span>匿名</span>
                     </li>
                     <li class="botton">
-                        <input type="submit" value="提交评论">
+                        <input type="button" value="提交评论" onclick="commit_comment()">
                     </li>
                 </ul>
+                <input type="hidden" name="star_number">
+                <input type="hidden" name="order_id" value="{$order_data.order_id}">
+                <input type="hidden" name="tech_id" value="{$order_data.tech_id}">
             </form>
         </section>
     </section>
-
 </section>
+{include file="jsd/common_notice_box.html"}
+<script>
+    function set_star(num){
+        $("input[name='star_number']").val(num);  
+    }
+    
+    function commit_comment(){
+        var comment = $("textarea[name='comment']").val();
+        var star_number = $("input[name='star_number']").val();
+        var order_id = $("input[name='order_id']").val();
+        var tech_id = $("input[name='tech_id']").val();
+        var anony = $("input[name='anony']:checked").val();
+        
+        $.ajax({
+            type : 'post',
+            url : '{$ajax_comment_url}',
+            data : {
+                'comment' : comment,
+                'star_number' : star_number,
+                'order_id' : order_id,
+                'tech_id' : tech_id,
+                'anony' : anony
+            },
+            dataType : 'json',
+            success : function(data) 
+            {
+                if(!data.status){
+                    //错误消息
+                    $(".queren").show();
+                    $(".complete").show();
+                    message_box_show(data.info);
+                    return false;
+                }else{
+                    //发送成功
+                    $(".queren").show();
+                    $(".complete").show();
+                    message_box_show(data.info);
+                    
+                    $('#message_box').siblings(".guan_2").click(function(){
+                        window.location.href="{$comment_list_url}";
+                    });
+                }
+            }
+        });
+
+    }
+</script>
 {include file="jsd/user_footer.html"}

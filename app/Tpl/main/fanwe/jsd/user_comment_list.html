@@ -1,41 +1,103 @@
 {include file="jsd/user_login_header.html"}
-    <section class="new_order">
-        <p>待评价</p>
+<section class="new_order">
+    <p id="new_order">待评价</p>
+    <div id="new_order_list">
+        {foreach key=key item=new_order from=$new_data}
         <ul>
             <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                <!--<img src="{$APP_ROOT}/public/jsd/images/show.png">-->
+                <img src="{$new_order.image}">
                 <span class="fl data">
-                    <p>头部按摩</p>
-                    <p>38元</p>
-                    <P>x1</P>
+                    <p>{$new_order.name}</p>
+                    <p>{$new_order.price}</p>
+                    <P>x{$new_order.amount}</P>
                 </span>
                 <span class="fr rig">
                     <p>交易成功</p>
-                    <a href="#">评价</a>
+                    <a href="{$new_order.order_url}" onclick="javascript:void(0)">评价</a>
                 </span>
             </li>
-            <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">删除订单</a> </i>
+            <i>{$new_order.created_at}  共{$new_order.amount}笔消费  合计：{$new_order.sum}元<a class="fr" href="###" onclick="delete_order('{$new_order.order_id}')">删除订单</a></i>
         </ul>
-    </section>
+        {foreachelse}
+            没有需要评价的订单
+        {/foreach} 
+    </div>
+</section>
 
-    <section class="new_order">
-        <p>已评价</p>
+<section class="new_order">
+    <p id="order_done">已评价</p>
+    <div id="order_done_list">
+        {foreach key=key item=done_order from=$done_data}
         <ul class="ca_wan">
             <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
+                <img src="{$done_order.image}">
                 <span class="fl data">
-                    <p>头部按摩</p>
-                    <p>38元</p>
-                    <P>x1</P>
+                    <p>{$done_order.name}</p>
+                    <p>{$done_order.price}</p>
+                    <P>x{$done_order.amount}</P>
                 </span>
                 <span class="fr rig">
                     <p>交易成功</p>
-                    <a class="over" href="#">已评价</a>
+                    <a class="over" href="###" onclick="javascript:void(0)">已评价</a>
                 </span>
             </li>
-            <i>2015-10-10 12:32  共1笔消费  合计：38元<a class="fr" href="#">删除订单</a> </i>
+            <i>{$done_order.created_at}  共{$done_order.amount}笔消费  合计：{$done_order.sum}元<a class="fr" href="###" onclick="delete_order('{$done_order.order_id}')">删除订单</a> </i>
         </ul>
-
-    </section>
+        {foreachelse}
+            没有已评价的订单
+        {/foreach}
+    </div>
 </section>
+</section>
+{include file="jsd/common_notice_box.html"}
+{include file="jsd/common_confirm_box.html"}
+<script>
+    $(document).ready(function () {
+        //个人资料
+        $("#new_order").click(function () {
+            $("#new_order_list").slideToggle();
+        });
+
+        //密码
+        $("#order_done").click(function () {
+            $("#order_done_list").slideToggle();
+        });
+    });
+
+    function delete_order(order_id) {
+        $("#queren").show();
+        $("#complete").show();
+        confirm_box_show("确定要删除订单吗?");
+
+        $('#message').siblings("dd").children("#yes_con").click(function () {
+            $.ajax({
+                type: 'post',
+                url: '{$ajax_delete_order_url}',
+                data: {
+                    'order_id': order_id
+                },
+                dataType: 'json',
+                success: function (data)
+                {
+                    if (!data.status) {
+                        //错误消息
+                        $(".queren").show();
+                        $(".complete").show();
+                        message_box_show(data.info);
+                        return false;
+                    } else {
+                        //发送成功
+                        window.location.reload();
+                    }
+                }
+            });
+        });
+
+        $('#message').siblings("dd").children("#no_con").click(function () {
+            $(".queren").hide();
+            $(".complete").hide();
+        });
+    }
+</script>
 {include file="jsd/user_footer.html"}

@@ -31,4 +31,9 @@ define("ORDER_STATUS_DOING",2);
 define("ORDER_STATUS_DONE",3);
 define("ORDER_STATUS_CANCEL",4);
 
+define("TECH_TYPE_ANMO",1);
+define("TECH_TYPE_GUASHA",2);
+define("TECH_TYPE_CHILD_TUINA",3);
+define("TECH_TYPE_ZULIAO",4);
+define("TECH_TYPE_SPA",5);
 ?>

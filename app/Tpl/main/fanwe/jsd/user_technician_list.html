@@ -18,41 +18,86 @@
     </section>
     <section class="ententy_nav">
         <ul>
-            <li class="lkg">按摩理疗</li>
-            <li>刮痧</li>
-            <li>小儿推拿</li>
-            <li>足疗</li>
-            <li>SPA</li>
+            <li class="lkg" onclick="change_tech_type(1)">按摩理疗</li>
+            <li onclick="change_tech_type(2)">刮痧</li>
+            <li onclick="change_tech_type(3)">小儿推拿</li>
+            <li onclick="change_tech_type(4)">足疗</li>
+            <li onclick="change_tech_type(5)">SPA</li>
         </ul>
     </section>
     <section class="details">
-        <ul>
-            <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
-                <span>
-                    <p class="biaoti"><a href="technician-data.html">唐悠悠</a><img src="{$APP_ROOT}/public/jsd/images/xing.png"><img src="{$APP_ROOT}/public/jsd/images/xing.png"> <em>今日可约</em> </p>
-                    <p class="location">位置：天府二街<i>4.5公里</i></p>
-                    <p>拥有16年丰富的工作经验，执有国家高级按摩师，擅 长调理肩颈...</p>
-                </span>
-            </li>
-            <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
-                <span>
-                    <p class="biaoti">唐悠悠<img src="{$APP_ROOT}/public/jsd/images/xing.png"><img src="{$APP_ROOT}/public/jsd/images/xing.png">  </p>
-                    <p class="location">位置：天府二街<i>4.5公里</i></p>
-                    <p>拥有16年丰富的工作经验，执有国家高级按摩师，擅 长调理肩颈...</p>
-                </span>
-            </li>
-            <li>
-                <img src="{$APP_ROOT}/public/jsd/images/show.png">
-                <span>
-                    <p class="biaoti">唐悠悠<img src="{$APP_ROOT}/public/jsd/images/xing.png"><img src="{$APP_ROOT}/public/jsd/images/xing.png">  </p>
-                    <p class="location">位置：天府二街<i>4.5公里</i></p>
-                    <p>拥有16年丰富的工作经验，执有国家高级按摩师，擅 长调理肩颈...</p>
-                </span>
-            </li>
-
+        <ul id="fresh_area">
+            {foreach key=key item=tech from=$tech_list}
+                <li>
+                    <img src="{$tech.icon}">
+                    <span>
+                        <p class="biaoti">
+                            <a href="{$tech.technician_detail_url}">{$tech.name}</a>
+                            {foreach item=tech_level from=$tech.new_level}
+                                <img src="{$APP_ROOT}/public/jsd/images/xing.png">
+                            {/foreach}
+                            <em>今日可约</em> 
+                        </p>
+                        <p class="location">位置：{$tech.address}<i>4.5公里</i></p>
+                        <p>{$tech.introduction}</p>
+                    </span>
+                </li>
+            {foreachelse}
+            {/foreach}
         </ul>
     </section>
 </section>
+<script>
+    function change_tech_type(tech_type){
+        $("#fresh_area").html('');
+        
+        $.ajax({
+            type: 'post',
+            url: '{$ajax_change_tech_type_url}',
+            data: {
+                'tech_type': tech_type
+            },
+            dataType: 'json',
+            success: function (data)
+            {
+                if (!data.status) {
+                    //错误消息
+                    $(".queren").show();
+                    $(".complete").show();
+                    message_box_show(data.info);
+                    return false;
+                } else {
+                    //发送成功
+                    var html = '';
+                    var level_star='';
+                    $.each(data.tech_list,function(i,item){
+                        $.each(item.new_level,function(ii,tech_level){
+                            level_star += '<img src="{$APP_ROOT}/public/jsd/images/xing.png">';
+                        });
+                        html += '<li>\n\
+                            <img src="'+item['icon']+'">\n\
+                            <span>\n\
+                                <p class="biaoti">\n\
+                                    <a href="'+item['technician_detail_url']+'">'+
+                                        item['name']+
+                                    '</a>'+level_star+'<em>今日可约</em> \n\
+                                </p>\n\
+                                <p class="location">\n\
+                                    位置：'+item['address']+'<i>4.5公里</i>\n\
+                                </p>\n\
+                                <p>'+item['introduction']+'</p>\n\
+                            </span>\n\
+                        </li>';
+                        level_star = '';
+                    });
+                    
+                    $(".details").show();
+                    $("#fresh_area").html(html);
+                }
+            }
+        });
+    }
+    
+</script>
+{include file="jsd/common_notice_box.html"}
 {include file="jsd/user_footer.html"}

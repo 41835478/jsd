@@ -33,13 +33,216 @@ class jsd_userModule extends JsdModule
     //评论列表
     public function comment_list() 
     {
+        //未登录跳转到login
+        if(empty($this->user)){
+            app_redirect(url("index", "jsd_user#login"));
+        }
+        
+        $sql = "SELECT 
+                    service.`service_id`,
+                    service.`name`,
+                    service.`price`,
+                    service.`image`,
+                    my_order.`order_id`,
+                    my_order.`created_at`,
+                    my_order.`is_comment`,
+                    my_order.`status`,
+                    my_order.`amount` 
+                FROM ".DB_PREFIX."jsd_order AS my_order 
+                LEFT JOIN 
+                    ".DB_PREFIX."jsd_technician_service AS service 
+                ON 
+                    my_order.`service_id` = service.`service_id` 
+                LEFT JOIN 
+                    ".DB_PREFIX."user AS user
+                ON 
+                    my_order.`user_id` = user.`id` 
+                WHERE user.`id` = ".$this->user['id']." 
+                AND my_order.`is_user_delete` = 0
+                AND my_order.`status` = 3 
+                ORDER BY my_order.`created_at`";
+        
+        $data = $GLOBALS['db']->getAll($sql);
+        
+        $new_data = array();
+        $done_data = array();
+        
+        foreach ($data as $value) {
+            if($value['is_comment'] == 0 ){
+                $value['sum'] = $value['price'] * $value['amount'];
+                $value['order_url'] = url('index', 'jsd_user#comment', array('order_id'=>$value['order_id']));
+                $new_data[] = $value;
+            }
+            
+            if($value['is_comment'] == 1 ){
+                $value['sum'] = $value['price'] * $value['amount'];
+                $value['order_url'] = url('index', 'jsd_user#comment', array('order_id'=>$value['order_id']));
+                $done_data[] = $value;
+            }
+        }
+        
+        $GLOBALS['tmpl']->assign("sum",$new_data);
+        $GLOBALS['tmpl']->assign("new_data",$new_data);
+        $GLOBALS['tmpl']->assign("done_data",$done_data);
+        $GLOBALS['tmpl']->assign("comment_url",url("index", "jsd_user#comment"));
+        $GLOBALS['tmpl']->assign("ajax_delete_order_url",url("index", "jsd_user#ajax_delete_order"));
+        
+        
+        $GLOBALS['tmpl']->assign("page_title","评价列表");
         $GLOBALS['tmpl']->display("jsd/user_comment_list.html");
     }
     
     //用户评价订单
     public function comment() 
     {
+        //未登录跳转到login
+        if(empty($this->user)){
+            app_redirect(url("index", "jsd_user#login"));
+        }
+        
+        $order_id = isset($_GET['order_id'])?intval($_GET['order_id']):NULL;
+        if(empty($order_id)){
+            app_redirect(url("index", "jsd_index"));
+        }
+        
+        $sql = "SELECT
+                tech.`technician_id` AS tech_id,
+                tech.`name` AS tech_name,
+                tech.`level` AS tech_level,
+                service.`name` AS service_name,
+                service.`price`,
+                service.`image`,
+                jsd_order.`order_id`,
+                jsd_order.`amount`,
+                jsd_order.`done_time`
+              FROM
+                ".DB_PREFIX."jsd_order AS jsd_order 
+                LEFT JOIN ".DB_PREFIX."jsd_technician_service AS service 
+                  ON jsd_order.`service_id` = service.`service_id` 
+                LEFT JOIN ".DB_PREFIX."jsd_technician AS tech 
+                  ON service.`technician_id` = tech.`technician_id` 
+              WHERE jsd_order.`user_id` = ".$this->user['id']." 
+                AND jsd_order.`order_id` = ".$order_id." 
+                AND jsd_order.`is_comment` = 0 ";
+        
+        $data = $GLOBALS['db']->getRow($sql);
+        if(empty($data)){
+            exit('订单不存在或者订单不属于本人');
+        }
+        
+        for ($i=0;$i<$data['tech_level'];$i++){
+            $new_level[] = $i;
+        }
+        $data['tech_level'] = $new_level;
+        
+        $GLOBALS['tmpl']->assign("page_title","评论订单");
+        $GLOBALS['tmpl']->assign("ajax_comment_url",url("index", "jsd_user#ajax_comment"));
+        $GLOBALS['tmpl']->assign("comment_list_url",url("index", "jsd_user#comment_list"));
+        $GLOBALS['tmpl']->assign("order_data",$data);
         $GLOBALS['tmpl']->display("jsd/user_comment.html");
+    }
+    
+    public function ajax_comment()
+    {
+        //未登录跳转到login
+        if(empty($this->user)){
+            app_redirect(url("index", "jsd_user#login"));
+        }
+        
+        //检查发送类型
+        if(empty($_POST)){
+            $data['status'] = FALSE;
+            $data['info'] = "请求失败";
+            ajax_return($data);
+        }
+        
+        $comment = !empty($_POST['comment'])?$_POST['comment']:NULL;
+        
+        $order_id = !empty($_POST['order_id'])?$_POST['order_id']:NULL;
+        $tech_id = !empty($_POST['tech_id'])?$_POST['tech_id']:NULL;
+        $anony = !empty($_POST['comment'])?$_POST['comment']:NULL;//1公开 2匿名
+        $star_number = !empty($_POST['star_number'])?$_POST['star_number']:NULL;
+        
+        if(empty($order_id) || empty($tech_id) || empty($anony) || empty($star_number)){
+            $data['status'] = FALSE;
+            $data['info'] = "参数错误";
+            ajax_return($data);
+        }
+        
+        $is_anony = 1;
+        if($anony == 1){
+            $is_anony = 0;
+        }
+
+        //插入评论
+        $sql_comment = "INSERT ".DB_PREFIX."jsd_comment (
+                            comment,
+                            order_id,
+                            is_anony,
+                            created_at,
+                            updated_at
+                          ) 
+                          VALUES(
+                            '".$comment."',
+                            '".$order_id."',
+                            '".$is_anony."',
+                            '".  date('Y-m-d H:i:s')."',
+                            '".  date('Y-m-d H:i:s')."'
+                          )";
+        $GLOBALS['db']->query($sql_comment);
+        $comment_id = $GLOBALS['db']->insert_id()?$GLOBALS['db']->insert_id():NULL;
+        
+        if(empty($comment_id)){
+            $data['status'] = FALSE;
+            $data['info'] = "评论添加错误";
+            ajax_return($data);
+        }
+        //打分
+        $sql_star = "INSERT ".DB_PREFIX."jsd_star (
+                            order_id,
+                            user_id,
+                            technician_id,
+                            score,
+                            created_at,
+                            updated_at
+                          ) 
+                          VALUES(
+                            '".$order_id."',
+                            '".$this->user['id']."',
+                            '".$tech_id."',
+                            '".$star_number."',
+                            '".  date('Y-m-d H:i:s')."',
+                            '".  date('Y-m-d H:i:s')."'
+                          )";
+        $GLOBALS['db']->query($sql_star);
+        $star_id = $GLOBALS['db']->insert_id()?$GLOBALS['db']->insert_id():NULL;
+        
+        if(empty($star_id)){
+            $GLOBALS['db']->query("delete from ".DB_PREFIX."jsd_comment where comment_id=".$comment_id);
+            $data['status'] = FALSE;
+            $data['info'] = "打分错误";
+            ajax_return($data);
+        }
+        //更新订单表
+        $GLOBALS['db']->query(
+                'UPDATE '.DB_PREFIX.'jsd_order 
+                SET is_comment = 1,
+                updated_at = "'.date('Y-m-d H:i:s').'"
+                WHERE order_id = '.$order_id.' 
+                AND user_id = '.$this->user['id']
+                );
+        $affected = $GLOBALS['db']->affected_rows()?$GLOBALS['db']->affected_rows():NULL;
+        if(empty($affected)){
+            $GLOBALS['db']->query("delete from ".DB_PREFIX."jsd_comment where comment_id=".$comment_id);
+            $GLOBALS['db']->query("delete from ".DB_PREFIX."jsd_star where star_id=".$star_id);
+            $data['status'] = FALSE;
+            $data['info'] = "订单更新失败";
+            ajax_return($data);
+        }
+        
+        $data['status'] = TRUE;
+        $data['info'] = "评论成功";
+        ajax_return($data);
     }
 
     //用户登录
@@ -269,7 +472,10 @@ class jsd_userModule extends JsdModule
                     service.`service_id`,
                     service.`name`,
                     service.`price`,
+                    service.`image`,
+                    my_order.`order_id`,
                     my_order.`created_at`,
+                    my_order.`is_comment`,
                     my_order.`status`,
                     my_order.`amount` 
                 FROM ".DB_PREFIX."jsd_order AS my_order 
@@ -281,7 +487,7 @@ class jsd_userModule extends JsdModule
                     ".DB_PREFIX."user AS user
                 ON 
                     my_order.`user_id` = user.`id` 
-                WHERE user.`id` = 81 
+                WHERE user.`id` = ".$this->user['id']." 
                 AND my_order.`is_user_delete` = 0 
                 ORDER BY my_order.`created_at`";
         
@@ -293,11 +499,13 @@ class jsd_userModule extends JsdModule
         foreach ($data as $value) {
             if($value['status'] == ORDER_STATUS_DOING ){
                 $value['sum'] = $value['price'] * $value['amount'];
+//                $value['order_url'] = url('index', 'jsd_user#comment', array('order_id'=>$value['order_id']));
                 $new_data[] = $value;
             }
             
             if($value['status'] == ORDER_STATUS_DONE ){
                 $value['sum'] = $value['price'] * $value['amount'];
+                $value['order_url'] = url('index', 'jsd_user#comment', array('order_id'=>$value['order_id']));
                 $done_data[] = $value;
             }
         }
@@ -305,11 +513,96 @@ class jsd_userModule extends JsdModule
         $GLOBALS['tmpl']->assign("sum",$new_data);
         $GLOBALS['tmpl']->assign("new_data",$new_data);
         $GLOBALS['tmpl']->assign("done_data",$done_data);
-        
+        $GLOBALS['tmpl']->assign("comment_url",url("index", "jsd_user#comment"));
+        $GLOBALS['tmpl']->assign("ajax_cancel_order_url",url("index", "jsd_user#ajax_cancel_order"));
+        $GLOBALS['tmpl']->assign("ajax_delete_order_url",url("index", "jsd_user#ajax_delete_order"));
+                
         $GLOBALS['tmpl']->assign("page_title","我的订单");
         $GLOBALS['tmpl']->display("jsd/user_order_list.html");
     } 
     
+    public function ajax_cancel_order()
+    {
+        //未登录跳转到login
+        if(empty($this->user)){
+            app_redirect(url("index", "jsd_user#login"));
+        }
+        
+        //检查发送类型
+        if(empty($_POST)){
+            $data['status'] = FALSE;
+            $data['info'] = "请求失败";
+            ajax_return($data);
+        }
+        
+        $order_id = !empty($_POST['order_id'])?$_POST['order_id']:NULL;
+        if(empty($order_id)){
+            $data['status'] = FALSE;
+            $data['info'] = "订单不存在";
+            ajax_return($data);
+        }
+        
+        $sql = 'UPDATE '.DB_PREFIX.'jsd_order 
+                SET
+                    STATUS = 4 
+                WHERE order_id = '.$order_id.' 
+                AND user_id = '.$this->user['id'];
+        
+        $res = $GLOBALS['db']->query($sql);
+        if(empty($res)){
+            $data['status'] = TRUE;
+            $data['info'] = "订单取消失败";
+            ajax_return($data);
+        }
+        
+        $data['status'] = TRUE;
+        $data['info'] = "订单取消成功";
+        ajax_return($data);
+        
+        
+    }
+    
+    public function ajax_delete_order()
+    {
+        //未登录跳转到login
+        if(empty($this->user)){
+            app_redirect(url("index", "jsd_user#login"));
+        }
+        
+        //检查发送类型
+        if(empty($_POST)){
+            $data['status'] = FALSE;
+            $data['info'] = "请求失败";
+            ajax_return($data);
+        }
+        
+        $order_id = !empty($_POST['order_id'])?$_POST['order_id']:NULL;
+        if(empty($order_id)){
+            $data['status'] = FALSE;
+            $data['info'] = "订单不存在";
+            ajax_return($data);
+        }
+        
+        $sql = 'UPDATE '.DB_PREFIX.'jsd_order 
+                SET
+                    is_user_delete = 1 
+                WHERE order_id = '.$order_id.' 
+                AND user_id = '.$this->user['id'];
+        
+        $res = $GLOBALS['db']->query($sql);
+        if(empty($res)){
+            $data['status'] = TRUE;
+            $data['info'] = "订单删除失败";
+            ajax_return($data);
+        }
+        
+        $data['status'] = TRUE;
+        $data['info'] = "订单删除成功";
+        ajax_return($data);
+        
+        
+    }
+
     //用户注册
     public function my_page() 
     {
@@ -507,12 +800,155 @@ class jsd_userModule extends JsdModule
     //技师列表
     public function technician_list()
     {
+        //没有登录则跳转到login
+        if(empty($this->user)){
+            app_redirect(url("index", "jsd_user#login"));
+        }
+        
+        $sql = "SELECT 
+                    t.`technician_id`,
+                    t.`name`,
+                    t.`address`,
+                    t.`icon`,
+                    t.`level`,
+                    t.`introduction`
+                  FROM
+                    ".DB_PREFIX."jsd_technician_ability ab 
+                    LEFT JOIN ".DB_PREFIX."jsd_technician_type tt 
+                      ON ab.`technician_type_id` = tt.`technician_type_id` 
+                    LEFT JOIN ".DB_PREFIX."jsd_technician t 
+                      ON ab.`technician_id` = t.`technician_id` 
+                  WHERE ab.`technician_type_id` = ".TECH_TYPE_ANMO." 
+                  ORDER BY ab.`type_level` DESC,
+                    t.`level` DESC";
+        
+        $data = $GLOBALS['db']->getAll($sql);
+        foreach ($data as $key => $value) {
+            for ($i=0;$i<$value['level'];$i++){
+                $value['new_level'][] = $i;
+            }
+            $value['technician_detail_url'] = url('index', 'jsd_user#technician_detail', array('technician_id'=>$value['technician_id']));
+            $data[$key] = $value;
+        }
+        
+        $GLOBALS['tmpl']->assign("ajax_change_tech_type_url",url("index", "jsd_user#ajax_change_tech_type"));
+        $GLOBALS['tmpl']->assign("tech_list",$data);
+        $GLOBALS['tmpl']->assign("page_title","技师列表");
         $GLOBALS['tmpl']->display("jsd/user_technician_list.html");
     }
     
-    //技师列表
+    public function ajax_change_tech_type()
+    {
+        //没有登录则跳转到login
+        if(empty($this->user)){
+            app_redirect(url("index", "jsd_user#login"));
+        }
+        
+        //检查发送类型
+        if(empty($_POST)){
+            $data['status'] = FALSE;
+            $data['info'] = "请求失败";
+            ajax_return($data);
+        }
+        
+        $tech_type = isset($_POST['tech_type'])?$_POST['tech_type']:NULL;
+        if(empty($tech_type)){
+            $data['status'] = FALSE;
+            $data['info'] = "参数错误";
+            ajax_return($data);
+        }
+        
+        $sql = "SELECT 
+                    t.`technician_id`,
+                    t.`name`,
+                    t.`address`,
+                    t.`icon`,
+                    t.`level`,
+                    t.`introduction`
+                  FROM
+                    ".DB_PREFIX."jsd_technician_ability ab 
+                    LEFT JOIN ".DB_PREFIX."jsd_technician_type tt 
+                      ON ab.`technician_type_id` = tt.`technician_type_id` 
+                    LEFT JOIN ".DB_PREFIX."jsd_technician t 
+                      ON ab.`technician_id` = t.`technician_id` 
+                  WHERE ab.`technician_type_id` = ".$tech_type." 
+                  ORDER BY ab.`type_level` DESC,
+                    t.`level` DESC";
+        
+        $res_data = $GLOBALS['db']->getAll($sql);
+        foreach ($res_data as $key => $value) {
+            for ($i=0;$i<$value['level'];$i++){
+                $value['new_level'][] = $i;
+            }
+            $value['technician_detail_url'] = url('index', 'jsd_user#technician_detail', array('technician_id'=>$value['technician_id']));
+            $res_data[$key] = $value;
+        }
+        
+        $data['status'] = TRUE;
+        $data['info'] = "请求成功";
+        $data['tech_list'] = $res_data;
+        ajax_return($data);
+        
+    }
+
+        //技师列表
     public function technician_detail()
     {
+        //未登录跳转到login
+        if(empty($this->user)){
+            app_redirect(url("index", "jsd_user#login"));
+        }
+        
+        $technician_id = isset($_GET['technician_id'])?intval($_GET['technician_id']):NULL;
+        if(empty($technician_id)){
+            app_redirect(url("index", "jsd_index"));
+        }
+        
+        //基本信息
+        $base_info_sql = "SELECT 
+                            t.`name`,
+                            IF(t.`gender` = 1, '男', '女') AS gender,
+                            t.`level`,
+                            t.`address`,
+                            t.`service_area`,
+                            t.`introduction`,
+                            IF(tmp_order_count.`order_count` IS NULL,0,tmp_order_count.`order_count`) AS order_count
+                          FROM
+                            fanwe_jsd_technician AS t 
+                            LEFT JOIN 
+                              (SELECT 
+                                tmp_t.`technician_id`,
+                                COUNT(*) AS order_count 
+                              FROM
+                                fanwe_jsd_technician AS tmp_t 
+                                LEFT JOIN fanwe_jsd_technician_service AS tmp_ts 
+                                  ON tmp_t.`technician_id` = tmp_ts.`technician_id` 
+                                LEFT JOIN fanwe_jsd_order AS o 
+                                  ON tmp_ts.`service_id` = o.`service_id` 
+                              WHERE o.`status` = 3) AS tmp_order_count 
+                              ON t.`technician_id` = tmp_order_count.`technician_id` 
+                          WHERE t.`technician_id` = ".$technician_id;
+        $base_data = $GLOBALS['db']->getRow($base_info_sql);
+        for ($i=0;$i<$base_data['level'];$i++){
+            $base_data['new_level'][] = $i;
+        }
+        
+        //服务列表
+        $service_sql = "SELECT 
+                            ts.`name`,
+                            ts.`price`,
+                            ts.`time`,
+                            ts.`image`
+                          FROM
+                            fanwe_jsd_technician AS t 
+                            RIGHT JOIN fanwe_jsd_technician_service AS ts 
+                              ON t.`technician_id` = ts.`technician_id` 
+                          WHERE t.`technician_id` = ".$technician_id;
+        $service_data = $GLOBALS['db']->getAll($service_sql);
+        
+        $GLOBALS['tmpl']->assign("service_data",$service_data);
+        $GLOBALS['tmpl']->assign("base_data",$base_data);
+        $GLOBALS['tmpl']->assign("page_title","技师详情");
         $GLOBALS['tmpl']->display("jsd/user_technician_detail.html");
     }
     

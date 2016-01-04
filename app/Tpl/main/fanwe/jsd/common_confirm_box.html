@@ -1,0 +1,18 @@
+<section class="queren" id="queren" style="display:none;z-index: 999999">
+    <ul>
+        <li class="complete" id="complete" style="display:none;">
+            <span style="background:none;padding-left: 0px" id="message"></span>
+            <dd style="width:60%;margin:auto;overflow:hidden;clear:both;">
+                <p class="guan_2" id="yes_con" style="float:left;">确定</p>
+                <p class="guan_2" id="no_con"  style="float:right;">取消</p>
+            </dd>
+        </li>
+    </ul>
+</section>
+<script>
+    function confirm_box_show(mess){
+        $('#message').html(mess);
+        
+        return true;
+    }
+</script>
