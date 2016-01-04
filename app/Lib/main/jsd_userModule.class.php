@@ -646,9 +646,87 @@ class jsd_userModule extends JsdModule
     
     public function service_list()
     {
+        $sql = "SELECT ts.`service_id`,
+                        ts.`name`,
+                        ts.`image`,
+                        ts.`description`,
+                        ts.`price` ,
+                        ts.`time`,
+                        COUNT(o.order_id) AS order_count
+                 FROM `fanwe_jsd_technician_service` ts
+                 LEFT JOIN `fanwe_jsd_order` o ON ts.`service_id` = o.`service_id`
+                 GROUP BY ts.`service_id`
+                 ORDER BY order_count DESC";
+        
+        $data = $GLOBALS['db']->getAll($sql);
+        foreach ($data as $key=>$value) {
+            $value['service_detail_url'] = url('index', 'jsd_user#service_detail', array('service_id'=>$value['service_id']));
+        
+            $data[$key] = $value;
+        }
+        
+        $GLOBALS['tmpl']->assign("ajax_order_by_url",url('index', 'jsd_user#ajax_order_by'));
+        $GLOBALS['tmpl']->assign("service_list",$data);
+        $GLOBALS['tmpl']->assign("page_title","服务列表");
         $GLOBALS['tmpl']->display("jsd/user_service_list.html");
     }
     
+    public function ajax_order_by()
+    {
+        //检查发送类型
+        if(empty($_POST)){
+            $data['status'] = FALSE;
+            $data['info'] = "请求失败";
+            ajax_return($data);
+        }
+        
+        $order_type = isset($_POST['order_type'])?$_POST['order_type']:NULL;
+        if(empty($order_type)){
+            $data['status'] = FALSE;
+            $data['info'] = "参数错误";
+            ajax_return($data);
+        }
+        
+        $by = '';
+        switch ($order_type) {
+            case 'order_num':
+                $by = 'order_count';
+                break;
+            case 'price':
+                $by = 'ts.`price`';
+                break;
+            case 'time':
+                $by = 'ts.`time`';
+                break;
+            default:
+                $by = 'order_count';
+                break;
+        }
+        $sql = "SELECT ts.`service_id`,
+                        ts.`name`,
+                        ts.`image`,
+                        ts.`description`,
+                        ts.`price` ,
+                        ts.`time`,
+                        COUNT(o.order_id) AS order_count
+                 FROM `fanwe_jsd_technician_service` ts
+                 LEFT JOIN `fanwe_jsd_order` o ON ts.`service_id` = o.`service_id`
+                 GROUP BY ts.`service_id`
+                 ORDER BY ".$by." DESC";
+        
+        $res_data = $GLOBALS['db']->getAll($sql);
+        foreach ($res_data as $key=>$value) {
+            $value['service_detail_url'] = url('index', 'jsd_user#service_detail', array('service_id'=>$value['service_id']));
+        
+            $res_data[$key] = $value;
+        }
+        
+        $data['status'] = TRUE;
+        $data['info'] = "请求成功";
+        $data['service_list'] = $res_data;
+        ajax_return($data);
+    }
+
     public function service_detail()
     {
         $GLOBALS['tmpl']->display("jsd/user_service_detail.html");
