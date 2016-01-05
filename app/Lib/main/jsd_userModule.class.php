@@ -729,9 +729,160 @@ class jsd_userModule extends JsdModule
 
     public function service_detail()
     {
+        $service_id = isset($_GET['service_id'])?intval($_GET['service_id']):NULL;
+        if(empty($service_id)){
+            app_redirect(url("index", "jsd_index"));
+        }
+        
+        //基本信息
+        $base_info_sql = "SELECT 
+                            ts.`name`,
+                            ts.`price`,
+                            ts.`time`,
+                            ts.`image`,
+                            ts.`description`,
+                            ts.`notice`,
+                            t.`level`,
+                            ts.`service_id`,
+                            IF(
+                              COUNT(o.`order_id`) IS NULL,
+                              0,
+                              COUNT(o.`order_id`)
+                            ) AS order_count 
+                          FROM
+                            fanwe_jsd_technician_service AS ts 
+                            LEFT JOIN fanwe_jsd_technician AS t 
+                              ON ts.`technician_id` = t.`technician_id` 
+                            LEFT JOIN fanwe_jsd_order AS o 
+                              ON ts.`service_id` = o.`service_id` 
+                          WHERE ts.`service_id` = ".$service_id."
+                          GROUP BY ts.`service_id`";
+        
+        $base_data = $GLOBALS['db']->getRow($base_info_sql);
+        for ($i=0;$i<$base_data['level'];$i++){
+            $base_data['new_level'][] = $i;
+        }
+        
+        $comment_sql = "SELECT 
+                            o.`order_id`,
+                            t.`technician_id` AS t_id,
+                            t.`name` AS t_name,
+                            s.`score`,
+                            u.`user_name`,
+                            user_comment.`comment` AS u_comment,
+                            user_comment.`created_at` AS u_comment_time,
+                            tech_comment.`comment` AS t_comment,
+                            tech_comment.`created_at` AS t_comment_time 
+                          FROM
+                            fanwe_jsd_order AS o 
+                            LEFT JOIN fanwe_user AS u 
+                              ON o.`user_id` = u.`id` 
+                            LEFT JOIN fanwe_jsd_comment AS user_comment 
+                              ON o.`order_id` = user_comment.`order_id` 
+                            LEFT JOIN fanwe_jsd_technician_comment AS tech_comment 
+                              ON (
+                                user_comment.`comment_id` = tech_comment.`to_comment_id` 
+                                AND user_comment.`order_id` = tech_comment.`order_id`
+                              ) 
+                            LEFT JOIN fanwe_jsd_star AS s 
+                              ON user_comment.`order_id` = s.`order_id`
+                            LEFT JOIN fanwe_jsd_technician AS t 
+                              ON s.`technician_id` = t.`technician_id`  
+                          WHERE o.`service_id` = ".$service_id." 
+                          ORDER BY s.`score` DESC
+                          LIMIT 0,2";
+        
+        $comment_data = $GLOBALS['db']->getAll($comment_sql);
+        
+        foreach ($comment_data as $key => $value) {
+            $new_score = array();
+            for ($i=0;$i<$value['score'];$i++){
+                $new_score[] = $i;
+            }
+            $value['is_tech_comment'] = 0;
+            if(!empty($value['t_comment']) && !empty($value['t_comment_time'])){
+                $value['is_tech_comment'] = 1;
+            }
+            $value['new_score'] = $new_score;
+            $comment_data[$key] = $value;
+        }
+        $GLOBALS['tmpl']->assign("offset",2);
+        $GLOBALS['tmpl']->assign("base_data",$base_data);
+        $GLOBALS['tmpl']->assign("comment_data",$comment_data);
+        $GLOBALS['tmpl']->assign("ajax_read_more_comment_url",url("index", "jsd_user#ajax_read_more_comment"));
+        $GLOBALS['tmpl']->assign("page_title","服务详情");
         $GLOBALS['tmpl']->display("jsd/user_service_detail.html");
     }
     
+    public function ajax_read_more_comment()
+    {
+        //检查发送类型
+        if(empty($_POST)){
+            $data['status'] = FALSE;
+            $data['info'] = "请求失败";
+            ajax_return($data);
+        }
+        
+        $offset = isset($_POST['offset'])?$_POST['offset']:NULL;
+        $service_id = isset($_POST['service_id'])?$_POST['service_id']:NULL;
+        
+        if(empty($offset) || empty($service_id)){
+            $data['status'] = FALSE;
+            $data['info'] = "查看更多报错";
+            ajax_return($data);
+        }
+        
+        $comment_sql = "SELECT 
+                            o.`order_id`,
+                            t.`technician_id` AS t_id,
+                            t.`name` AS t_name,
+                            s.`score`,
+                            u.`user_name`,
+                            user_comment.`comment` AS u_comment,
+                            user_comment.`created_at` AS u_comment_time,
+                            tech_comment.`comment` AS t_comment,
+                            tech_comment.`created_at` AS t_comment_time 
+                          FROM
+                            fanwe_jsd_order AS o 
+                            LEFT JOIN fanwe_user AS u 
+                              ON o.`user_id` = u.`id` 
+                            LEFT JOIN fanwe_jsd_comment AS user_comment 
+                              ON o.`order_id` = user_comment.`order_id` 
+                            LEFT JOIN fanwe_jsd_technician_comment AS tech_comment 
+                              ON (
+                                user_comment.`comment_id` = tech_comment.`to_comment_id` 
+                                AND user_comment.`order_id` = tech_comment.`order_id`
+                              ) 
+                            LEFT JOIN fanwe_jsd_star AS s 
+                              ON user_comment.`order_id` = s.`order_id`
+                            LEFT JOIN fanwe_jsd_technician AS t 
+                              ON s.`technician_id` = t.`technician_id`  
+                          WHERE o.`service_id` = ".$service_id." 
+                          ORDER BY s.`score` DESC
+                          LIMIT ".$offset.",2";
+        
+        $comment_data = $GLOBALS['db']->getAll($comment_sql);
+        
+        foreach ($comment_data as $key => $value) {
+            $new_score = array();
+            for ($i=0;$i<$value['score'];$i++){
+                $new_score[] = $i;
+            }
+            $value['is_tech_comment'] = 0;
+            if(!empty($value['t_comment']) && !empty($value['t_comment_time'])){
+                $value['is_tech_comment'] = 1;
+            }
+            $value['new_score'] = $new_score;
+            $comment_data[$key] = $value;
+        }
+        
+        $data['status'] = TRUE;
+        $data['info'] = "查看成功";
+        $data['offset'] = $offset+2;
+        $data['comment_data'] = $comment_data;
+        ajax_return($data);
+    }
+
     public function setting()
     {
         //未登录跳转到login
@@ -985,6 +1136,7 @@ class jsd_userModule extends JsdModule
         //基本信息
         $base_info_sql = "SELECT 
                             t.`name`,
+                            t.`icon`,
                             IF(t.`gender` = 1, '男', '女') AS gender,
                             t.`level`,
                             t.`address`,
